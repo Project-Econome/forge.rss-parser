@@ -5,7 +5,7 @@ const xml2js_1 = require("xml2js");
 exports.default = new forgescript_1.NativeFunction({
     name: "$getLatestYT",
     description: "Fetches the latest video details from a YouTube channel name or RSS feed URL.",
-    version: "1.1.0",
+    version: "1.0.0",
     brackets: false,
     unwrap: true,
     args: [

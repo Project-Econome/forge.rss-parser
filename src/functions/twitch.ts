@@ -44,14 +44,31 @@ export default new NativeFunction({
             // Get the latest video entry
             const latestVideo = feed.item[0];
 
-            // Extract video details
-            const videoDetails = {
+            // Extract the description which contains the thumbnail and URL
+            const description = latestVideo.description?.[0] || "";
+            const urlMatch = description.match(/href="(https:\/\/www\.twitch\.tv\/videos\/\d+)"/);
+            const thumbnailMatch = description.match(/src="(https:\/\/static-cdn\.jtvnw\.net\/cf_vods[^"]+)"/);
+
+            // Define videoDetails with the possible `videoUrl` and `thumbnail`
+            const videoDetails: {
+                title: string;
+                url: string;
+                published: string;
+                thumbnail: string;
+                description: string;
+                videoUrl?: string; // Optional property
+            } = {
                 title: latestVideo.title?.[0] || "No title available",
                 url: latestVideo.link?.[0] || "No URL available",
                 published: latestVideo.pubDate?.[0] || "No published date available",
-                thumbnail: latestVideo["media:thumbnail"]?.[0]?.$.url || "No thumbnail available",
-                description: latestVideo.description?.[0] || "No description available",
+                thumbnail: thumbnailMatch ? thumbnailMatch[1] : "No thumbnail available",
+                description: description || "No description available",
             };
+
+            // If we matched the URL from the description, include it
+            if (urlMatch) {
+                videoDetails.videoUrl = urlMatch[1];
+            }
 
             console.log("Latest video details:", videoDetails);
 

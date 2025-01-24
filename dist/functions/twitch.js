@@ -4,50 +4,56 @@ const forgescript_1 = require("@tryforge/forgescript");
 const xml2js_1 = require("xml2js");
 exports.default = new forgescript_1.NativeFunction({
     name: "$getLatestTwitch",
-    description: "Fetches the latest video details from a Twitch RSS feed.",
-    version: "1.0.0",
+    description: "Fetches the latest video details from a Twitch RSS feed URL.",
+    version: "1.0.3",
     brackets: false,
     unwrap: true,
     args: [
         {
-            name: "channelName",
-            description: "The Twitch channel name.",
+            name: "url",
+            description: "The Twitch RSS feed URL.",
             type: forgescript_1.ArgType.String,
             required: true,
             rest: false,
         },
     ],
-    async execute(ctx, [channelName]) {
+    async execute(ctx, [url]) {
         try {
-            // Validate the channel name
-            if (!channelName) {
-                console.log("Channel name is required.");
-                return this.customError("You must provide a channel name.");
+            // Validate the URL
+            if (!url || typeof url !== "string" || !url.startsWith("http")) {
+                console.log("Invalid RSS feed URL.");
+                return this.customError("You must provide a valid Twitch RSS feed URL.");
             }
-            // Construct the RSS feed URL
-            const rssUrl = `https://twitchrss.appspot.com/vod/${channelName}`;
             // Fetch the RSS feed
-            const response = await fetch(rssUrl);
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Failed to fetch RSS feed. HTTP status: ${response.status}`);
+                return this.customError("Failed to fetch the Twitch RSS feed.");
+            }
             const xmlData = await response.text();
-            // Parse the XML data
+            // Parse the XML data to JSON
             const result = await (0, xml2js_1.parseStringPromise)(xmlData);
             // Ensure the feed has entries
-            const feed = result.rss.channel[0];
+            const feed = result.rss && result.rss.channel ? result.rss.channel[0] : null;
             if (!feed || !feed.item || feed.item.length === 0) {
                 console.log("No videos found in the RSS feed.");
                 return this.customError("No videos found in the RSS feed.");
             }
             // Get the latest video entry
-            const latestVideo = feed.item[0];
-            // Extract video details
+            const entry = feed.item[0];
+            // Extract thumbnail and URL from the description
+            const descriptionHtml = entry.description ? entry.description[0] : "";
+            const thumbnailMatch = descriptionHtml.match(/<img src="([^"]+)"/);
+            const urlMatch = descriptionHtml.match(/<a href="([^"]+)"/);
+            // Map the JSON structure to extract required fields
             const videoDetails = {
-                title: latestVideo.title?.[0] || "No title available",
-                url: latestVideo.link?.[0] || "No URL available",
-                published: latestVideo.pubDate?.[0] || "No published date available",
-                thumbnail: latestVideo["media:thumbnail"]?.[0]?.$.url || "No thumbnail available",
-                description: latestVideo.description?.[0] || "No description available",
+                title: entry.title ? entry.title[0] : "No title available",
+                link: entry.link ? entry.link[0] : "No link available",
+                pubDate: entry.pubDate ? entry.pubDate[0] : "No publication date available",
+                thumbnail: thumbnailMatch ? thumbnailMatch[1] : "No thumbnail available",
+                url: urlMatch ? urlMatch[1] : "No video URL available",
             };
-            console.log("Latest video details:", videoDetails);
+            console.log("Latest Twitch video details:", videoDetails);
             // Return the video details as JSON
             return this.success(JSON.stringify(videoDetails, null, 2));
         }

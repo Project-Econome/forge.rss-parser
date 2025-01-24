@@ -2,31 +2,36 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const forgescript_1 = require("@tryforge/forgescript");
 const xml2js_1 = require("xml2js");
-// Define the function
 exports.default = new forgescript_1.NativeFunction({
     name: "$getLatestYT",
-    description: "Fetches the latest video details from a YouTube RSS feed URL.",
-    version: "1.0.3",
+    description: "Fetches the latest video details from a YouTube channel name or RSS feed URL.",
+    version: "1.1.0",
     brackets: false,
     unwrap: true,
     args: [
         {
-            name: "url",
-            description: "The YouTube RSS feed URL.",
+            name: "input",
+            description: "The YouTube channel name or RSS feed URL.",
             type: forgescript_1.ArgType.String,
             required: true,
             rest: false,
         },
     ],
-    async execute(ctx, [url]) {
+    async execute(ctx, [input]) {
         try {
-            // Validate the URL
-            if (!url || typeof url !== "string" || !url.startsWith("http")) {
-                console.log("Invalid RSS feed URL.");
-                return this.customError("You must provide a valid RSS feed URL.");
+            // Validate the input
+            if (!input || typeof input !== "string") {
+                console.log("Invalid input.");
+                return this.customError("You must provide a valid channel name or RSS feed URL.");
+            }
+            let rssUrl = input;
+            // Detect if the input is a channel name
+            if (!input.startsWith("http")) {
+                console.log("Assuming input is a channel name.");
+                rssUrl = `https://www.youtube.com/feeds/videos.xml?user=${input}`;
             }
             // Fetch the RSS feed
-            const response = await fetch(url);
+            const response = await fetch(rssUrl);
             if (!response.ok) {
                 console.error(`Failed to fetch RSS feed. HTTP status: ${response.status}`);
                 return this.customError("Failed to fetch the RSS feed.");

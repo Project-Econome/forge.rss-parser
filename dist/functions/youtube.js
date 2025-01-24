@@ -5,23 +5,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const forgescript_1 = require("@tryforge/forgescript");
 const rss_parser_1 = __importDefault(require("rss-parser"));
-// Create an instance of the parser with the custom item type
+// Extend the parser with the custom fields
 const parser = new rss_parser_1.default({
     customFields: {
-        item: ['media:thumbnail', 'author'],
-        feed: ['image'],
+        item: [
+            "media:thumbnail",
+            "media:description",
+            "author",
+        ],
     },
 });
 exports.default = new forgescript_1.NativeFunction({
-    name: '$getLatestVideo',
-    description: 'Fetches the latest video details from a YouTube RSS feed, including thumbnail, author, and author icon.',
-    version: '1.1.1',
+    name: "$getLatestVideo",
+    description: "Fetches the latest video details from a YouTube RSS feed.",
+    version: "1.1.2",
     brackets: false,
     unwrap: true,
     args: [
         {
-            name: 'url',
-            description: 'The YouTube RSS feed URL.',
+            name: "url",
+            description: "The YouTube RSS feed URL.",
             type: forgescript_1.ArgType.String,
             required: true,
             rest: false,
@@ -29,41 +32,36 @@ exports.default = new forgescript_1.NativeFunction({
     ],
     async execute(ctx, [url]) {
         try {
-            // Validate the provided URL
-            if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+            // Validate the URL
+            if (!url || typeof url !== "string" || !url.startsWith("http")) {
                 console.log("Invalid RSS feed URL.");
                 return this.customError("You must provide a valid RSS feed URL.");
             }
-            // Parse the RSS feed
+            // Parse the feed
             const feed = await parser.parseURL(url);
             // Ensure the feed has entries
             if (!feed.items || feed.items.length === 0) {
                 console.log("No videos found in the RSS feed.");
                 return this.customError("No videos found in the RSS feed.");
             }
-            // Get the latest video (first entry in the items array)
+            // Get the latest video entry
             const latestVideo = feed.items[0];
-            // Extract thumbnail (media:thumbnail field)
-            const thumbnailUrl = latestVideo['media:thumbnail']?.url || "No thumbnail available";
-            // Extract author name and author icon
-            const authorName = latestVideo.author || feed.title || "No author available";
-            const authorIcon = feed.image?.url || "No author icon available"; // Use feed-level image for author icon if available
-            // Extract relevant details
+            // Extract the required fields
             const videoDetails = {
                 title: latestVideo.title || "No title available",
                 url: latestVideo.link || "No link available",
                 published: latestVideo.pubDate || "No published date available",
-                description: latestVideo.contentSnippet || "No description available",
-                thumbnail: thumbnailUrl,
-                author: authorName,
-                authorIcon: authorIcon,
+                thumbnail: latestVideo["media:thumbnail"]?.url || "No thumbnail available",
+                description: latestVideo["media:description"] || "No description available",
+                author: latestVideo.author?.name || feed.title || "No author available",
+                authorIcon: latestVideo.author?.uri || "No author icon available",
             };
             console.log("Latest video details:", videoDetails);
-            // Return video details as JSON
+            // Return the video details as JSON
             return this.success(JSON.stringify(videoDetails, null, 2));
         }
         catch (error) {
-            // Handle errors gracefully
+            // Handle errors
             if (error instanceof Error) {
                 console.error("Error fetching or parsing RSS feed:", error.message);
                 return this.customError(`An error occurred: ${error.message}`);

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const forgescript_1 = require("@tryforge/forgescript");
 const xml2js_1 = require("xml2js");
 exports.default = new forgescript_1.NativeFunction({
-    name: "$getLatestTwitchVideo",
+    name: "$getLatestTwitch",
     description: "Fetches the latest video details from a Twitch RSS feed.",
     version: "1.0.0",
     brackets: false,

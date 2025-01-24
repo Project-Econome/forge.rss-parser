@@ -2,7 +2,7 @@ import { ArgType, NativeFunction } from "@tryforge/forgescript";
 import { parseStringPromise } from "xml2js";
 
 export default new NativeFunction({
-    name: "$getLatestTwitchVideo",
+    name: "$getLatestTwitch",
     description: "Fetches the latest video details from a Twitch RSS feed.",
     version: "1.0.0",
     brackets: false,

@@ -42,6 +42,8 @@ exports.default = new forgescript_1.NativeFunction({
             }
             // Get the latest video entry
             const entry = feed.entry[0];
+            // Extract media:group information
+            const mediaGroup = entry["media:group"] ? entry["media:group"][0] : null;
             // Map the JSON structure to extract required fields
             const videoDetails = {
                 id: entry.id ? entry.id[0] : "No ID available",
@@ -51,16 +53,16 @@ exports.default = new forgescript_1.NativeFunction({
                 link: entry.link && entry.link[0] && entry.link[0].$ ? entry.link[0].$.href : "No link available",
                 published: entry.published ? entry.published[0] : "No published date available",
                 updated: entry.updated ? entry.updated[0] : "No updated date available",
-                thumbnail: entry["media:thumbnail"] &&
-                    entry["media:thumbnail"][0] &&
-                    entry["media:thumbnail"][0].$ &&
-                    entry["media:thumbnail"][0].$.url
-                    ? entry["media:thumbnail"][0].$.url
+                thumbnail: mediaGroup && mediaGroup["media:thumbnail"] && mediaGroup["media:thumbnail"][0] && mediaGroup["media:thumbnail"][0].$ && mediaGroup["media:thumbnail"][0].$.url
+                    ? mediaGroup["media:thumbnail"][0].$.url
                     : "No thumbnail available",
-                description: entry["media:description"] && entry["media:description"][0]
-                    ? entry["media:description"][0]
+                description: mediaGroup && mediaGroup["media:description"] && mediaGroup["media:description"][0]
+                    ? mediaGroup["media:description"][0]
                     : "No description available",
                 author: entry.author && entry.author[0] && entry.author[0].name ? entry.author[0].name[0] : "No author available",
+                views: mediaGroup && mediaGroup["media:community"] && mediaGroup["media:community"][0] && mediaGroup["media:community"][0]["media:statistics"] && mediaGroup["media:community"][0]["media:statistics"][0].$
+                    ? mediaGroup["media:community"][0]["media:statistics"][0].$.views
+                    : "No views available",
             };
             console.log("Latest video details:", videoDetails);
             // Return the video details as JSON

@@ -4,7 +4,7 @@ const forgescript_1 = require("@tryforge/forgescript");
 const xml2js_1 = require("xml2js");
 // Define the function
 exports.default = new forgescript_1.NativeFunction({
-    name: "$getLatestVideo",
+    name: "$getLatestYT",
     description: "Fetches the latest video details from a YouTube RSS feed URL.",
     version: "1.0.3",
     brackets: false,

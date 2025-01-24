@@ -3,7 +3,7 @@ import { parseStringPromise } from "xml2js";
 
 // Define the function
 export default new NativeFunction({
-    name: "$getLatestVideo",
+    name: "$getLatestYT",
     description: "Fetches the latest video details from a YouTube RSS feed URL.",
     version: "1.0.3",
     brackets: false,

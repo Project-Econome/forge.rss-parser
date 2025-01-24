@@ -1,6 +1,6 @@
 {
   "name": "@econome/forge.rss-parser",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "scripts": {
     "docgen": "tsc && typedoc src/index.ts && node dist/docgen",
@@ -12,11 +12,13 @@
   "devDependencies": {
     "@tryforge/forgescript": "^2.0.0",
     "@types/node": "^22.5.0",
+    "@types/xml2js": "^0.4.14",
     "discord.js": "^14.17.2",
     "typedoc": "^0.26.6",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "xml2js": "^0.6.2"
   }
 }

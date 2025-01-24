@@ -1,24 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const forgescript_1 = require("@tryforge/forgescript");
-const rss_parser_1 = __importDefault(require("rss-parser"));
-// Extend the parser with the custom fields
-const parser = new rss_parser_1.default({
-    customFields: {
-        item: [
-            "media:thumbnail",
-            "media:description",
-            "author",
-        ],
-    },
-});
+const xml2js_1 = require("xml2js");
+// Define the function
 exports.default = new forgescript_1.NativeFunction({
     name: "$getLatestVideo",
     description: "Fetches the latest video details from a YouTube RSS feed.",
-    version: "1.1.2",
+    version: "1.0.2",
     brackets: false,
     unwrap: true,
     args: [
@@ -37,28 +25,27 @@ exports.default = new forgescript_1.NativeFunction({
                 console.log("Invalid RSS feed URL.");
                 return this.customError("You must provide a valid RSS feed URL.");
             }
-            // Parse the feed
-            const feed = await parser.parseURL(url);
-            // Debug the parsed feed to see its structure
-            console.log("Parsed feed structure:", JSON.stringify(feed, null, 2));
+            // Fetch the RSS feed
+            const response = await fetch(url);
+            const xmlData = await response.text();
+            // Parse the XML data to JSON
+            const result = await (0, xml2js_1.parseStringPromise)(xmlData);
             // Ensure the feed has entries
-            if (!feed.items || feed.items.length === 0) {
+            const feed = result.feed;
+            if (!feed || !feed.entry || feed.entry.length === 0) {
                 console.log("No videos found in the RSS feed.");
                 return this.customError("No videos found in the RSS feed.");
             }
             // Get the latest video entry
-            const latestVideo = feed.items[0];
-            // Debug the latest video entry
-            console.log("Latest video entry:", JSON.stringify(latestVideo, null, 2));
+            const latestVideo = feed.entry[0];
             // Extract the required fields
             const videoDetails = {
-                title: latestVideo.title || "No title available",
-                url: latestVideo.link || "No link available",
-                published: latestVideo.pubDate || "No published date available",
-                thumbnail: latestVideo["media:thumbnail"]?.url || "No thumbnail available",
-                description: latestVideo["media:description"] || "No description available",
-                author: latestVideo.author?.name || feed.title || "No author available",
-                authorIcon: latestVideo.author?.uri || "No author icon available",
+                title: latestVideo.title && latestVideo.title[0] ? latestVideo.title[0] : "No title available",
+                url: latestVideo.link && latestVideo.link[0] && latestVideo.link[0].$ && latestVideo.link[0].$.href ? latestVideo.link[0].$.href : "No link available",
+                published: latestVideo.published && latestVideo.published[0] ? latestVideo.published[0] : "No published date available",
+                thumbnail: latestVideo["media:thumbnail"] && latestVideo["media:thumbnail"][0] && latestVideo["media:thumbnail"][0].$ && latestVideo["media:thumbnail"][0].$.url ? latestVideo["media:thumbnail"][0].$.url : "No thumbnail available",
+                description: latestVideo["media:description"] && latestVideo["media:description"][0] ? latestVideo["media:description"][0] : "No description available",
+                author: latestVideo.author && latestVideo.author[0] && latestVideo.author[0].name && latestVideo.author[0].name[0] ? latestVideo.author[0].name[0] : "No author available",
             };
             console.log("Latest video details:", videoDetails);
             // Return the video details as JSON

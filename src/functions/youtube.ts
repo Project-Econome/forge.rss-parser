@@ -1,22 +1,11 @@
 import { ArgType, NativeFunction } from "@tryforge/forgescript";
 import { parseStringPromise } from "xml2js";
 
-// Define custom fields for the RSS feed items
-interface CustomFeedItem {
-    title?: string[];
-    link?: { $: { href: string } }[]; // Corrected link type
-    pubDate?: string[];
-    "media:thumbnail"?: { $: { url: string } }[]; // Corrected for media:thumbnail
-    "media:description"?: string[];
-    author?: { name: string }[];
-    published?: string[]; // Added the 'published' field to the interface
-}
-
 // Define the function
 export default new NativeFunction({
     name: "$getLatestVideo",
-    description: "Fetches the latest video details from a YouTube RSS feed.",
-    version: "1.0.2",
+    description: "Fetches the latest video details from a YouTube RSS feed URL.",
+    version: "1.0.3",
     brackets: false,
     unwrap: true,
     args: [
@@ -38,6 +27,10 @@ export default new NativeFunction({
 
             // Fetch the RSS feed
             const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Failed to fetch RSS feed. HTTP status: ${response.status}`);
+                return this.customError("Failed to fetch the RSS feed.");
+            }
             const xmlData = await response.text();
 
             // Parse the XML data to JSON
@@ -51,16 +44,29 @@ export default new NativeFunction({
             }
 
             // Get the latest video entry
-            const latestVideo: CustomFeedItem = feed.entry[0];
+            const entry = feed.entry[0];
 
-            // Extract the required fields
+            // Map the JSON structure to extract required fields
             const videoDetails = {
-                title: latestVideo.title && latestVideo.title[0] ? latestVideo.title[0] : "No title available",
-                url: latestVideo.link && latestVideo.link[0] && latestVideo.link[0].$ && latestVideo.link[0].$.href ? latestVideo.link[0].$.href : "No link available",
-                published: latestVideo.published && latestVideo.published[0] ? latestVideo.published[0] : "No published date available",
-                thumbnail: latestVideo["media:thumbnail"] && latestVideo["media:thumbnail"][0] && latestVideo["media:thumbnail"][0].$ && latestVideo["media:thumbnail"][0].$.url ? latestVideo["media:thumbnail"][0].$.url : "No thumbnail available",
-                description: latestVideo["media:description"] && latestVideo["media:description"][0] ? latestVideo["media:description"][0] : "No description available",
-                author: latestVideo.author && latestVideo.author[0] && latestVideo.author[0].name && latestVideo.author[0].name[0] ? latestVideo.author[0].name[0] : "No author available",
+                id: entry.id ? entry.id[0] : "No ID available",
+                videoId: entry["yt:videoId"] ? entry["yt:videoId"][0] : "No video ID available",
+                channelId: entry["yt:channelId"] ? entry["yt:channelId"][0] : "No channel ID available",
+                title: entry.title ? entry.title[0] : "No title available",
+                link: entry.link && entry.link[0] && entry.link[0].$ ? entry.link[0].$.href : "No link available",
+                published: entry.published ? entry.published[0] : "No published date available",
+                updated: entry.updated ? entry.updated[0] : "No updated date available",
+                thumbnail:
+                    entry["media:thumbnail"] &&
+                    entry["media:thumbnail"][0] &&
+                    entry["media:thumbnail"][0].$ &&
+                    entry["media:thumbnail"][0].$.url
+                        ? entry["media:thumbnail"][0].$.url
+                        : "No thumbnail available",
+                description:
+                    entry["media:description"] && entry["media:description"][0]
+                        ? entry["media:description"][0]
+                        : "No description available",
+                author: entry.author && entry.author[0] && entry.author[0].name ? entry.author[0].name[0] : "No author available",
             };
 
             console.log("Latest video details:", videoDetails);

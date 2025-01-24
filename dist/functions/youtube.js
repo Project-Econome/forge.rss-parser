@@ -5,8 +5,8 @@ const xml2js_1 = require("xml2js");
 // Define the function
 exports.default = new forgescript_1.NativeFunction({
     name: "$getLatestVideo",
-    description: "Fetches the latest video details from a YouTube RSS feed.",
-    version: "1.0.2",
+    description: "Fetches the latest video details from a YouTube RSS feed URL.",
+    version: "1.0.3",
     brackets: false,
     unwrap: true,
     args: [
@@ -27,6 +27,10 @@ exports.default = new forgescript_1.NativeFunction({
             }
             // Fetch the RSS feed
             const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Failed to fetch RSS feed. HTTP status: ${response.status}`);
+                return this.customError("Failed to fetch the RSS feed.");
+            }
             const xmlData = await response.text();
             // Parse the XML data to JSON
             const result = await (0, xml2js_1.parseStringPromise)(xmlData);
@@ -37,15 +41,26 @@ exports.default = new forgescript_1.NativeFunction({
                 return this.customError("No videos found in the RSS feed.");
             }
             // Get the latest video entry
-            const latestVideo = feed.entry[0];
-            // Extract the required fields
+            const entry = feed.entry[0];
+            // Map the JSON structure to extract required fields
             const videoDetails = {
-                title: latestVideo.title && latestVideo.title[0] ? latestVideo.title[0] : "No title available",
-                url: latestVideo.link && latestVideo.link[0] && latestVideo.link[0].$ && latestVideo.link[0].$.href ? latestVideo.link[0].$.href : "No link available",
-                published: latestVideo.published && latestVideo.published[0] ? latestVideo.published[0] : "No published date available",
-                thumbnail: latestVideo["media:thumbnail"] && latestVideo["media:thumbnail"][0] && latestVideo["media:thumbnail"][0].$ && latestVideo["media:thumbnail"][0].$.url ? latestVideo["media:thumbnail"][0].$.url : "No thumbnail available",
-                description: latestVideo["media:description"] && latestVideo["media:description"][0] ? latestVideo["media:description"][0] : "No description available",
-                author: latestVideo.author && latestVideo.author[0] && latestVideo.author[0].name && latestVideo.author[0].name[0] ? latestVideo.author[0].name[0] : "No author available",
+                id: entry.id ? entry.id[0] : "No ID available",
+                videoId: entry["yt:videoId"] ? entry["yt:videoId"][0] : "No video ID available",
+                channelId: entry["yt:channelId"] ? entry["yt:channelId"][0] : "No channel ID available",
+                title: entry.title ? entry.title[0] : "No title available",
+                link: entry.link && entry.link[0] && entry.link[0].$ ? entry.link[0].$.href : "No link available",
+                published: entry.published ? entry.published[0] : "No published date available",
+                updated: entry.updated ? entry.updated[0] : "No updated date available",
+                thumbnail: entry["media:thumbnail"] &&
+                    entry["media:thumbnail"][0] &&
+                    entry["media:thumbnail"][0].$ &&
+                    entry["media:thumbnail"][0].$.url
+                    ? entry["media:thumbnail"][0].$.url
+                    : "No thumbnail available",
+                description: entry["media:description"] && entry["media:description"][0]
+                    ? entry["media:description"][0]
+                    : "No description available",
+                author: entry.author && entry.author[0] && entry.author[0].name ? entry.author[0].name[0] : "No author available",
             };
             console.log("Latest video details:", videoDetails);
             // Return the video details as JSON

@@ -39,6 +39,8 @@ exports.default = new forgescript_1.NativeFunction({
             }
             // Parse the feed
             const feed = await parser.parseURL(url);
+            // Debug the parsed feed to see its structure
+            console.log("Parsed feed structure:", JSON.stringify(feed, null, 2));
             // Ensure the feed has entries
             if (!feed.items || feed.items.length === 0) {
                 console.log("No videos found in the RSS feed.");
@@ -46,6 +48,8 @@ exports.default = new forgescript_1.NativeFunction({
             }
             // Get the latest video entry
             const latestVideo = feed.items[0];
+            // Debug the latest video entry
+            console.log("Latest video entry:", JSON.stringify(latestVideo, null, 2));
             // Extract the required fields
             const videoDetails = {
                 title: latestVideo.title || "No title available",

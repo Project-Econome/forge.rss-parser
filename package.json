@@ -18,6 +18,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "node-fetch": "^3.3.2",
     "rss-parser": "^3.13.0",
     "xml2js": "^0.6.2"
   }

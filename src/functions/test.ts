@@ -23,6 +23,6 @@ export default new NativeFunction({
         let feed = await parser.parseURL(url);
 
 
-        return this.success(feed.title)
+        return this.success(JSON.stringify({ title: feed.title, description: feed.description, url: feed.content.url }, null, 2))
     },
 });

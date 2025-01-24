@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ForgeMC = void 0;
+exports.ForgeRss = void 0;
 const forgescript_1 = require("@tryforge/forgescript");
 const package_json_1 = require("../package.json");
-class ForgeMC extends forgescript_1.ForgeExtension {
-    name = 'Forge.MC';
+class ForgeRss extends forgescript_1.ForgeExtension {
+    name = 'Forge.RSS-parser';
     description = 'A forgescript extension that allows you to view Minecraft Server Statistics';
     version = package_json_1.version;
     init() {
@@ -12,6 +12,6 @@ class ForgeMC extends forgescript_1.ForgeExtension {
     }
     ;
 }
-exports.ForgeMC = ForgeMC;
+exports.ForgeRss = ForgeRss;
 ;
 //# sourceMappingURL=index.js.map

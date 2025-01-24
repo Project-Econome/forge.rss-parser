@@ -1,8 +1,8 @@
 import { ForgeExtension } from '@tryforge/forgescript';
 import { version } from '../package.json';
 
-export class ForgeMC extends ForgeExtension {
-    name = 'Forge.MC';
+export class ForgeRss extends ForgeExtension {
+    name = 'Forge.RSS-parser';
     description = 'A forgescript extension that allows you to view Minecraft Server Statistics';
     version = version;
 

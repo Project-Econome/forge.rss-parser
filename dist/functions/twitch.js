@@ -49,12 +49,7 @@ exports.default = new forgescript_1.NativeFunction({
                 url: latestVideo.link?.[0] || "No URL available",
                 published: latestVideo.pubDate?.[0] || "No published date available",
                 thumbnail: thumbnailMatch ? thumbnailMatch[1] : "No thumbnail available",
-                description: description || "No description available",
             };
-            // If we matched the URL from the description, include it
-            if (urlMatch) {
-                videoDetails.videoUrl = urlMatch[1];
-            }
             console.log("Latest video details:", videoDetails);
             // Return the video details as JSON
             return this.success(JSON.stringify(videoDetails, null, 2));

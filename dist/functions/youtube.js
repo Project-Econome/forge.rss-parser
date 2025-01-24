@@ -5,12 +5,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const forgescript_1 = require("@tryforge/forgescript");
 const rss_parser_1 = __importDefault(require("rss-parser"));
-// Create an instance of the parser
-const parser = new rss_parser_1.default();
+// Create an instance of the parser with the custom item type
+const parser = new rss_parser_1.default({
+    customFields: {
+        item: ['media:thumbnail', 'author'],
+        feed: ['image'],
+    },
+});
 exports.default = new forgescript_1.NativeFunction({
     name: '$getLatestVideo',
-    description: 'Fetches the latest video details from a YouTube RSS feed.',
-    version: '1.0.0',
+    description: 'Fetches the latest video details from a YouTube RSS feed, including thumbnail, author, and author icon.',
+    version: '1.1.1',
     brackets: false,
     unwrap: true,
     args: [
@@ -38,12 +43,20 @@ exports.default = new forgescript_1.NativeFunction({
             }
             // Get the latest video (first entry in the items array)
             const latestVideo = feed.items[0];
+            // Extract thumbnail (media:thumbnail field)
+            const thumbnailUrl = latestVideo['media:thumbnail']?.url || "No thumbnail available";
+            // Extract author name and author icon
+            const authorName = latestVideo.author || feed.title || "No author available";
+            const authorIcon = feed.image?.url || "No author icon available"; // Use feed-level image for author icon if available
             // Extract relevant details
             const videoDetails = {
                 title: latestVideo.title || "No title available",
                 url: latestVideo.link || "No link available",
                 published: latestVideo.pubDate || "No published date available",
                 description: latestVideo.contentSnippet || "No description available",
+                thumbnail: thumbnailUrl,
+                author: authorName,
+                authorIcon: authorIcon,
             };
             console.log("Latest video details:", videoDetails);
             // Return video details as JSON

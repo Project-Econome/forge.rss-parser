@@ -1,13 +1,29 @@
 import { ArgType, NativeFunction } from "@tryforge/forgescript";
-import Parser from "rss-parser";
+import Parser, { Item } from "rss-parser";
 
-// Create an instance of the parser
-const parser = new Parser();
+// Extend the default Item type to include the custom fields
+interface CustomItem extends Item {
+    "media:thumbnail"?: { url: string };
+    author?: string;
+}
+
+interface CustomFeed {
+    image?: { url: string };
+    title?: string;
+}
+
+// Create an instance of the parser with the custom item type
+const parser: Parser<CustomFeed, CustomItem> = new Parser({
+    customFields: {
+        item: ['media:thumbnail', 'author'],
+        feed: ['image'],
+    },
+});
 
 export default new NativeFunction({
     name: '$getLatestVideo',
-    description: 'Fetches the latest video details from a YouTube RSS feed.',
-    version: '1.0.0',
+    description: 'Fetches the latest video details from a YouTube RSS feed, including thumbnail, author, and author icon.',
+    version: '1.1.1',
     brackets: false,
     unwrap: true,
     args: [
@@ -39,12 +55,22 @@ export default new NativeFunction({
             // Get the latest video (first entry in the items array)
             const latestVideo = feed.items[0];
 
+            // Extract thumbnail (media:thumbnail field)
+            const thumbnailUrl = latestVideo['media:thumbnail']?.url || "No thumbnail available";
+
+            // Extract author name and author icon
+            const authorName = latestVideo.author || feed.title || "No author available";
+            const authorIcon = feed.image?.url || "No author icon available"; // Use feed-level image for author icon if available
+
             // Extract relevant details
             const videoDetails = {
                 title: latestVideo.title || "No title available",
                 url: latestVideo.link || "No link available",
                 published: latestVideo.pubDate || "No published date available",
                 description: latestVideo.contentSnippet || "No description available",
+                thumbnail: thumbnailUrl,
+                author: authorName,
+                authorIcon: authorIcon,
             };
 
             console.log("Latest video details:", videoDetails);

@@ -9,7 +9,7 @@ let parser = new rss_parser_1.default();
 exports.default = new forgescript_1.NativeFunction({
     name: '$testParse',
     description: 'Parses an RSS feed from a given URL.',
-    version: '1.1.0',
+    version: '1.0.0',
     brackets: false,
     unwrap: true,
     args: [

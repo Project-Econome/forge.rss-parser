@@ -6,7 +6,7 @@ let parser = new Parser();
 export default new NativeFunction({
     name: '$testParse',
     description: 'Parses an RSS feed from a given URL.',
-    version: '1.1.0',
+    version: '1.0.0',
     brackets: false,
     unwrap: true,
     args: [

@@ -1,28 +1,67 @@
 import { ArgType, NativeFunction } from "@tryforge/forgescript";
-import Parser from "rss-parser"
+import Parser from "rss-parser";
 
 let parser = new Parser();
 
 export default new NativeFunction({
     name: '$testParse',
-    description: 'test parses a url',
-    version: '1.0.0',
+    description: 'Parses an RSS feed from a given URL.',
+    version: '1.1.0',
     brackets: false,
     unwrap: true,
     args: [
         {
             name: 'url',
-            description: 'url',
+            description: 'The RSS feed URL to parse.',
             type: ArgType.String,
-            required: false,
+            required: true,
             rest: false
         }
     ],
-    async execute(ctx, [url]) {
-        
-        let feed = await parser.parseURL('https://www.reddit.com/.rss');
+    async execute(ctx, [url]: [string]) {
+        try {
+            // Ensure the URL is valid and non-empty
+            if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+                console.log("Invalid URL provided.");
+                return this.customError("You must provide a valid URL starting with http or https.");
+            }
 
+            // Attempt to parse the RSS feed
+            const feed = await parser.parseURL(url);
 
-        return this.success(JSON.stringify({ title: feed.title, description: feed.description, url: feed.content.url }, null, 2))
+            // Validate and format the response
+            if (feed) {
+                const title = feed.title || "No title available";
+                const description = feed.description || "No description available";
+                const link = feed.link || "No link available";
+
+                console.log("Feed successfully parsed:", { title, description, link });
+
+                // Return the parsed feed details
+                return this.success(
+                    JSON.stringify(
+                        {
+                            title,
+                            description,
+                            link
+                        },
+                        null,
+                        2
+                    )
+                );
+            } else {
+                console.log("Feed object is null or undefined.");
+                return this.customError("Failed to retrieve the feed details.");
+            }
+        } catch (error) {
+            // Ensure proper type assertion for the error
+            if (error instanceof Error) {
+                console.error("Error parsing RSS feed:", error.message);
+                return this.customError(`An error occurred while parsing the RSS feed: ${error.message}`);
+            } else {
+                console.error("Unknown error:", error);
+                return this.customError("An unknown error occurred while parsing the RSS feed.");
+            }
+        }
     },
 });
